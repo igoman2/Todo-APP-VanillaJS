@@ -1,20 +1,16 @@
-import { componentsPlugin } from "bootstrap-vue";
 import "./style.css";
-
-const modal = document.querySelector(".modal");
-const closeButton = modal.querySelector("button");
-const modalBackground = modal.querySelector(".modal-background");
+import displayModal from "./modal.js";
 
 const checkInputTitle = document.querySelector("#todo-input-title");
 const checkInputLimitTime = document.querySelector("#todo-input-limit-time");
-const inputSumbitBtn = document.querySelector("#submit-button");
+const inputSumbitBtn = document.querySelector(".submit-btn");
 const removeCheckedBtn = document.querySelector("#remove-all-checked");
 const removeAll = document.querySelector("#remove-all");
 const inputEventSupervisor = document.querySelector("#input-supervisor");
-const ul = document.querySelector("ul");
+const todoList = document.querySelector("#todos");
 const sortByRegistTime = document.querySelector("#sort-register-time");
 const sortByRestTime = document.querySelector("#sort-rest-time");
-const sortParent = document.querySelector(".todo-option-filter");
+const sortSupervisor = document.querySelector(".todo-option-supervisor");
 const completedTodos = document.querySelector("#completed-todos");
 let globalInputTitle;
 let globalInputLimitTime;
@@ -35,7 +31,7 @@ checkInputTitle.addEventListener("keyup", function() {
 checkInputLimitTime.addEventListener("keyup", function() {
   globalInputLimitTime = this.value;
 });
-sortParent.addEventListener("click", function(event) {
+sortSupervisor.addEventListener("click", function(event) {
   console.log(event.target);
   sortByRegistTime.classList.toggle("checked");
   sortByRestTime.classList.toggle("checked");
@@ -52,7 +48,7 @@ sortByRegistTime.addEventListener("click", function() {
     li.appendChild(titleSpan);
     li.classList.add("task");
     li.style.listStyle = "none";
-    ul.appendChild(li);
+    todoList.appendChild(li);
 
     let timerSpan = document.createElement("span");
     timerSpan.setAttribute("id", "stopWatchDisplay");
@@ -94,8 +90,6 @@ inputSumbitBtn.onclick = function() {
     checkInputLimitTime.value = "";
     globalInputTitle = undefined;
     globalInputLimitTime = undefined;
-    let todo = document.querySelectorAll(".todo");
-    todoClickEvent(todo, todoListData);
     checkInputTitle.focus();
   }
   function render() {
@@ -106,7 +100,7 @@ inputSumbitBtn.onclick = function() {
     li.appendChild(titleSpan);
     li.classList.add("task");
     li.style.listStyle = "none";
-    ul.appendChild(li);
+    todoList.appendChild(li);
 
     let timerSpan = document.createElement("span");
     timerSpan.setAttribute("id", `stopWatchDisplay-${Date.now()}`);
@@ -143,8 +137,11 @@ inputSumbitBtn.onclick = function() {
     if (!hasDone) {
       interval = setTimeout(() => {
         time--;
+        if (time <= 5) {
+          timerSpan.parentNode.classList.add("warn");
+        }
         if (time == 0) {
-          displayModal();
+          displayModal(inputTitle);
           addCompleteList(timerSpan, inputTitle, inputLimitTime);
           hasDone = true;
         }
@@ -199,49 +196,9 @@ function makeList(inputTitle, inputLimitTime) {
   completeLimitTime.innerHTML = inputLimitTime;
   li.appendChild(completeLimitTime);
 }
-//check박스를 클릭 할때 마다 스타일 변화 및 삭제기능 추가
-function todoClickEvent(target, data) {
-  //this 지정
-
-  for (let i = 0; i < target.length; i++) {
-    // console.log(target[i].childNodes)
-    //스타일 변화
-    target[i].childNodes[1].addEventListener("click", function() {
-      if (this.parentNode.classList.value.indexOf("checked") >= 0) {
-        this.parentNode.classList.remove("checked");
-        this.parentNode.style.color = "#000";
-      } else {
-        this.parentNode.classList.add("checked");
-        this.parentNode.style.color = "red";
-      }
-    });
-    //삭제
-    target[i].childNodes[5].addEventListener("click", function() {
-      if (this.parentNode.classList.value.indexOf("checked") >= 0) {
-        this.parentNode.remove();
-        data.splice(i, 1);
-        target = document.querySelectorAll(".todo");
-      }
-    });
-    // 수정
-    target[i].childNodes[7].addEventListener("click", function() {
-      let prompt = window.prompt("수정할 내용을 입력해주세요");
-      if (prompt.length > 0) {
-        this.parentNode.childNodes[3].innerHTML = prompt;
-        data[i] = prompt;
-      }
-    });
-  }
-}
 function resetChild() {
   let cell = document.getElementById("todos");
   while (cell.hasChildNodes()) {
     cell.removeChild(cell.firstChild);
   }
-}
-
-closeButton.addEventListener("click", displayModal);
-modalBackground.addEventListener("click", displayModal);
-function displayModal() {
-  modal.classList.toggle("hidden");
 }

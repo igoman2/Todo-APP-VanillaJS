@@ -20,35 +20,30 @@
                         종료 시간
                         <input type="text" id="todo-input-limit-time" placeholder="초 단위 시간 입력" minlength="1" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*?)\..*/g, '$1')"/>
                     </span>
-                    <button class="submit-btn" id="submit-button">추가</button>
+                    <button class="submit-btn">추가</button>
                 </div>
                 <div>
                     <h1>
                         할 일 목록
                     </h1>
                     <div class="todo-option-container">
-                        <div class="todo-option-filter">
+                        <div class="todo-option-supervisor">
                             <button class="checked" id="sort-register-time">
                                 입력한 순
-                                <span></span>
                             </button>
                             <button id="sort-rest-time">
                                 남은 시간 순
-                                <span></span>
                             </button>
                         </div>
                         <div class="todo-option-complete">
                             <button id="remove-all-checked" disabled>
                                 선택 종료
-                                <span></span>
                             </button>
                             <button id="remove-all">
                                 전체 종료
-                                <span></span>
                             </button>
                         </div>
                     </div>
-
                     <ul class="todos-container" id="todos"></ul>
                 </div>
             </div>
@@ -67,8 +62,9 @@
         <div class="modal hidden">
             <div class="modal-background"></div>
             <div class="modal-content">
-                <h1>--Modal--</h1>
-                <button>Close</button>
+                <h2 class=complete-task-title>
+                </h2>
+                <button>확인</button>
             </div>
         </div>
     </body>
