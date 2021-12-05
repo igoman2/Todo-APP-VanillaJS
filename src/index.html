@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Todo</title>
+    </head>
+
+    <body>
+        <section id="todosBox">
+            <div>
+                <h1>MY TODO LIST</h1>
+                <div class="todo-inputBox input-group" id="input-supervisor">
+                    <input type="text" id="todo-input-title" placeholder="할 일 내용 입력" minlength="1"/>
+                    <input type="text" id="todo-input-limitTime" placeholder="초 단위 시간 입력" minlength="1" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*?)\..*/g, '$1')"/>
+                    <button id="submit-button">입력</button>
+                </div>
+                
+                <div>
+                    <ui id="todos"></ui>
+                </div>
+                <div style="margin-top:5px;">
+                    <button id="removeAllChecked">
+                        Checked
+                        <span></span>
+                    </button>
+                    <button id="removeAll">
+                        All
+                        <span></span>
+                    </button>
+                </div>
+            </div>
+            <button id="modalButton">Open Modal</button>
+            <div class="modal hidden">
+                <div class="modal__background"></div>
+                <div class="modal__content">
+                    <h1>--Modal--</h1>
+                    <button>Close</button>
+                </div>
+            </div>
+        </section>
+        
+    </body>
+</html>
