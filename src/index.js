@@ -1,96 +1,180 @@
 import "./style.css";
+
+const modal = document.querySelector(".modal");
+const closeButton = modal.querySelector("button");
+const modalBackground = modal.querySelector(".modal-background");
+
+const checkInputTitle = document.querySelector("#todo-input-title");
+const checkInputLimitTime = document.querySelector("#todo-input-limit-time");
+const inputSumbitBtn = document.querySelector("#submit-button");
+const removeCheckedBtn = document.querySelector("#remove-all-checked");
+const removeAll = document.querySelector("#remove-all");
+const inputEventSupervisor = document.querySelector("#input-supervisor");
+const ul = document.querySelector("ul");
+const sortByRegistTime = document.querySelector("#sort-register-time");
+const sortByRestTime = document.querySelector("#sort-rest-time");
+const sortParent = document.querySelector(".todo-option-filter");
+const completedTodos = document.querySelector("#completed-todos");
+let globalInputTitle;
+let globalInputLimitTime;
+let todoListData = [];
+
 window.onload = () => {
-  //이벤트를 적용할 엘리먼트 선택
-  const checkInputTitle = document.querySelector("#todo-input-title");
-  const checkInputLimitTime = document.querySelector("#todo-input-limitTime");
-  const inputSumbitBtn = document.querySelector("#submit-button");
-  const todos = document.querySelector("#todos");
-  const removeCheckedBtn = document.querySelector("#removeAllChecked");
-  const removeAll = document.querySelector("#removeAll");
-  const inputEventSupervisor = document.querySelector("#input-supervisor");
-
-  // todo관련 데이터 저장 변수 설정
-  let inputTitle;
-  let inputLimitTime;
-  let todoListData = [];
-  // let todo = [];
-
-  inputEventSupervisor.addEventListener("keyup", (event) => {
-    if (event.code === "Enter") {
-      inputSumbitBtn.onclick();
-    }
-  });
-  // 인풋값 받아오기(제목)
-  checkInputTitle.addEventListener("keyup", function(event) {
-    inputTitle = this.value;
-  });
-  // 인풋값 받아오기(시간)
-  checkInputLimitTime.addEventListener("keyup", function(event) {
-    inputLimitTime = this.value;
-  });
-
-  //인풋값 데이터에 등록하기
-  inputSumbitBtn.onclick = function() {
-    const validation = Boolean(inputTitle && inputLimitTime);
-    if (!validation) {
-      alert("데이터를 입력해 주세요!");
-    } else {
-      let obj = {
-        title: inputTitle,
-        limitTime: inputLimitTime,
-      };
-      todoListData.push(obj);
-      checkInputTitle.value = "";
-      checkInputLimitTime.value = "";
-      inputTitle = undefined;
-      inputLimitTime = undefined;
-      makeList(todos, todoListData);
-      let todo = document.querySelectorAll(".todo");
-      todoClickEvent(todo, todoListData);
-    }
-  };
-  removeCheckedBtn.addEventListener("click", function() {
-    let allTodos = document.querySelectorAll(".todo");
-    for (let i = 0; i < todoListData.length; i++) {
-      if (allTodos[i].classList.value.indexOf("checked") > -1) {
-        allTodos[i].remove();
-      }
-    }
-
-    todoListData = [];
-    const aliveTodos = document.querySelectorAll(".todo");
-
-    for (let setData of aliveTodos) {
-      todoListData.push(setData.childNodes[3].innerHTML);
-    }
-  });
-
-  removeAll.onclick = function() {
-    let allTodos = document.querySelectorAll(".todo");
-    for (let i = 0; i < todoListData.length; i++) {
-      allTodos[i].remove();
-    }
-    todoListData = [];
-  };
+  checkInputTitle.focus();
 };
 
-//todo 리스트 템플릿을 생성하는 함수
-function makeList(target, data) {
-  let targetChild = document.querySelectorAll(".todo");
-  for (let child of targetChild) {
-    target.removeChild(child);
+inputEventSupervisor.addEventListener("keyup", (event) => {
+  if (event.code === "Enter") {
+    inputSumbitBtn.onclick();
   }
-  for (let i = 0; i < data.length; i++) {
-    console.log(data[i]);
-    let template = `<li class="todo list-group-item">
-        <input type="checkbox" class="checkbox-inline" ">
-        <b>${data[i].title}</b>
-        <b>${data[i].limitTime}</b>
-        <span class="edit" style="cursor:pointer;">Edit</span>
-        </li>`;
-    target.innerHTML += template;
+});
+checkInputTitle.addEventListener("keyup", function() {
+  globalInputTitle = this.value;
+});
+checkInputLimitTime.addEventListener("keyup", function() {
+  globalInputLimitTime = this.value;
+});
+
+sortParent.addEventListener("click", function(event) {
+  console.log(event.target);
+  sortByRegistTime.classList.toggle("checked");
+  sortByRestTime.classList.toggle("checked");
+});
+sortByRegistTime.addEventListener("click", function() {
+  resetChild();
+  todoListData.sort((a, b) => {
+    return a.registerTime - b.registerTime;
+  });
+  todoListData.forEach((item) => {
+    var li = document.createElement("li");
+    let titleSpan = document.createElement("span");
+    titleSpan.innerHTML = item.title;
+    li.appendChild(titleSpan);
+    li.classList.add("task");
+    li.style.listStyle = "none";
+    ul.appendChild(li);
+
+    var timerSpan = document.createElement("span");
+    timerSpan.setAttribute("id", "stopWatchDisplay");
+    timerSpan.classList.add("timerDisplay");
+    timerSpan.innerHTML = item.limitTime;
+    li.appendChild(timerSpan);
+  });
+});
+sortByRestTime.addEventListener("click", function() {
+  // 남은 시간 순
+});
+
+inputSumbitBtn.onclick = function() {
+  const inputTitle = globalInputTitle;
+  const inputLimitTime = globalInputLimitTime;
+  let time = inputLimitTime;
+  let hasDone = inputLimitTime > 0 ? false : true;
+
+  const validation = Boolean(inputTitle && inputLimitTime);
+  if (!validation) {
+    alert("데이터를 입력해 주세요!");
+  } else {
+    store();
+    render();
+    reset();
   }
-}
+
+  function store() {
+    let task = {
+      title: inputTitle,
+      limitTime: inputLimitTime,
+      registerTime: new Date(),
+    };
+    todoListData.push(task);
+  }
+  function reset() {
+    checkInputTitle.value = "";
+    checkInputLimitTime.value = "";
+    globalInputTitle = undefined;
+    globalInputLimitTime = undefined;
+    let todo = document.querySelectorAll(".todo");
+    todoClickEvent(todo, todoListData);
+    checkInputTitle.focus();
+  }
+  function render() {
+    var li = document.createElement("li");
+    let titleSpan = document.createElement("span");
+    titleSpan.innerHTML = inputTitle;
+    li.appendChild(titleSpan);
+    li.classList.add("task");
+    li.style.listStyle = "none";
+    ul.appendChild(li);
+
+    var timerSpan = document.createElement("span");
+    timerSpan.setAttribute("id", `stopWatchDisplay-${Date.now()}`);
+    timerSpan.classList.add("timerDisplay");
+    timerSpan.innerHTML = inputLimitTime;
+    li.appendChild(timerSpan);
+
+    let checkbox = document.createElement("input");
+    checkbox.setAttribute("type", "checkbox");
+    checkbox.setAttribute("id", "check");
+    li.appendChild(checkbox);
+
+    let completeBtn = document.createElement("button");
+    completeBtn.setAttribute("id", "complete-btn");
+    completeBtn.innerText = "종료";
+    completeBtn.addEventListener("click", (event) => {
+      makeComplete(event);
+    });
+
+    li.appendChild(completeBtn);
+    increment(timerSpan);
+  }
+
+  function increment(timerSpan) {
+    let interval;
+    if (!hasDone) {
+      interval = setTimeout(() => {
+        time--;
+        if (time == 0) {
+          displayModal();
+          let target = timerSpan.parentNode;
+          target.parentNode.removeChild(target);
+
+          var li = document.createElement("li");
+          let completeTitle = document.createElement("span");
+          completeTitle.innerHTML = inputTitle;
+          li.appendChild(completeTitle);
+          li.classList.add("task");
+          li.style.listStyle = "none";
+          completedTodos.appendChild(li);
+
+          var completeLimitTime = document.createElement("span");
+          completeLimitTime.innerHTML = inputLimitTime;
+          li.appendChild(completeLimitTime);
+
+          hasDone = true;
+        }
+        timerSpan.innerHTML = time;
+        increment(timerSpan);
+      }, 1000);
+    }
+  }
+};
+removeCheckedBtn.addEventListener("click", function() {
+  var body = document.getElementById("todos");
+  var chkbox = document.querySelectorAll("#todos .task #check");
+  for (var i in chkbox) {
+    if (chkbox[i].nodeType == 1 && chkbox[i].checked == true) {
+      body.removeChild(chkbox[i].parentNode);
+    }
+  }
+});
+
+removeAll.onclick = function() {
+  let allTodos = document.querySelectorAll(".todo");
+  for (let i = 0; i < todoListData.length; i++) {
+    allTodos[i].remove();
+  }
+  todoListData = [];
+};
 
 //check박스를 클릭 할때 마다 스타일 변화 및 삭제기능 추가
 function todoClickEvent(target, data) {
@@ -126,16 +210,20 @@ function todoClickEvent(target, data) {
     });
   }
 }
+function makeComplete(event) {
+  const parent = event.target.parentNode.parentNode;
+  parent.removeChild(event.target.parentNode);
+}
 
-const openButton = document.querySelector("#modalButton");
-const modal = document.querySelector(".modal");
-const closeButton = modal.querySelector("button");
-const modalBackground = modal.querySelector(".modal__background");
+function resetChild() {
+  var cell = document.getElementById("todos");
+  while (cell.hasChildNodes()) {
+    cell.removeChild(cell.firstChild);
+  }
+}
 
+closeButton.addEventListener("click", displayModal);
+modalBackground.addEventListener("click", displayModal);
 function displayModal() {
   modal.classList.toggle("hidden");
 }
-
-openButton.addEventListener("click", displayModal);
-closeButton.addEventListener("click", displayModal);
-modalBackground.addEventListener("click", displayModal);

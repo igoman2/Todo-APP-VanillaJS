@@ -1,5 +1,29 @@
-.todo-inputBox {
-  margin: 15px 0;
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  color: #333;
+}
+
+.container .layout {
+  width: 500px;
+}
+
+.todo-option-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.todo-input-box {
+  display: flex;
+  padding: 15px 10px;
+  border: 1px solid gray;
+}
+
+.todos-container {
+  padding: 15px 10px;
+  border: 1px solid gray;
 }
 
 .form-group {
@@ -15,15 +39,10 @@
   overflow-x: hidden;
 }
 
-#submit-button {
+.submit-btn {
+  width: 50px;
+  display: block;
   cursor: pointer;
-}
-
-#todosBox {
-  position: relative;
-  top: 50vh;
-  margin-top: -30vh;
-  color: #333;
 }
 
 .modal {
@@ -37,14 +56,14 @@
   height: 100%;
 }
 
-.modal__background {
+.modal-background {
   background-color: rgba(0, 0, 0, 0.6);
   width: 100%;
   height: 100%;
   position: absolute;
 }
 
-.modal__content {
+.modal-content {
   text-align: center;
   position: relative;
   background-color: white;
@@ -56,4 +75,8 @@
 
 .hidden {
   display: none;
+}
+
+.checked {
+  background: lightgreen;
 }

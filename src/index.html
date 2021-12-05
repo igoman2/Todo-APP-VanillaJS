@@ -8,38 +8,68 @@
     </head>
 
     <body>
-        <section id="todosBox">
-            <div>
-                <h1>MY TODO LIST</h1>
-                <div class="todo-inputBox input-group" id="input-supervisor">
-                    <input type="text" id="todo-input-title" placeholder="할 일 내용 입력" minlength="1"/>
-                    <input type="text" id="todo-input-limitTime" placeholder="초 단위 시간 입력" minlength="1" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*?)\..*/g, '$1')"/>
-                    <button id="submit-button">입력</button>
+        <section class="container">
+            <div class="layout">
+                <h1>할 일 만들기</h1>
+                <div class="todo-input-box" id="input-supervisor">
+                    <span>
+                        할 일 작성
+                        <input type="text" id="todo-input-title" placeholder="할 일 내용 입력" minlength="1"/>
+                    </span>
+                    <span>
+                        종료 시간
+                        <input type="text" id="todo-input-limit-time" placeholder="초 단위 시간 입력" minlength="1" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*?)\..*/g, '$1')"/>
+                    </span>
+                    <button class="submit-btn" id="submit-button">추가</button>
                 </div>
-                
                 <div>
-                    <ui id="todos"></ui>
-                </div>
-                <div style="margin-top:5px;">
-                    <button id="removeAllChecked">
-                        Checked
-                        <span></span>
-                    </button>
-                    <button id="removeAll">
-                        All
-                        <span></span>
-                    </button>
-                </div>
-            </div>
-            <button id="modalButton">Open Modal</button>
-            <div class="modal hidden">
-                <div class="modal__background"></div>
-                <div class="modal__content">
-                    <h1>--Modal--</h1>
-                    <button>Close</button>
+                    <h1>
+                        할 일 목록
+                    </h1>
+                    <div class="todo-option-container">
+                        <div class="todo-option-filter">
+                            <button class="checked" id="sort-register-time">
+                                입력한 순
+                                <span></span>
+                            </button>
+                            <button id="sort-rest-time">
+                                남은 시간 순
+                                <span></span>
+                            </button>
+                        </div>
+                        <div class="todo-option-complete">
+                            <button id="remove-all-checked" disabled>
+                                선택 종료
+                                <span></span>
+                            </button>
+                            <button id="remove-all">
+                                전체 종료
+                                <span></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <ul class="todos-container" id="todos"></ul>
                 </div>
             </div>
         </section>
-        
+
+        <section class="container">
+            <div class="layout">
+                <h1>
+                    종료된 할 일
+                </h1>
+                <ul class="todos-container" id="completed-todos">
+                </ul>
+            </div>
+        </section>
+
+        <div class="modal hidden">
+            <div class="modal-background"></div>
+            <div class="modal-content">
+                <h1>--Modal--</h1>
+                <button>Close</button>
+            </div>
+        </div>
     </body>
 </html>
