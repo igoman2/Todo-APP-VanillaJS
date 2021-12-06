@@ -32,38 +32,96 @@ checkInputLimitTime.addEventListener("keyup", function() {
   globalInputLimitTime = this.value;
 });
 sortSupervisor.addEventListener("click", function(event) {
-  console.log(event.target);
   sortByRegistTime.classList.toggle("checked");
   sortByRestTime.classList.toggle("checked");
 });
-sortByRegistTime.addEventListener("click", function() {
-  resetChild();
-  todoListData.sort((a, b) => {
-    return a.registerTime - b.registerTime;
-  });
-  todoListData.forEach((item) => {
-    let li = document.createElement("li");
-    let titleSpan = document.createElement("span");
-    titleSpan.innerHTML = item.title;
-    li.appendChild(titleSpan);
-    li.classList.add("task");
-    li.style.listStyle = "none";
-    todoList.appendChild(li);
-
-    let timerSpan = document.createElement("span");
-    timerSpan.setAttribute("id", "stopWatchDisplay");
-    timerSpan.classList.add("timerDisplay");
-    timerSpan.innerHTML = item.limitTime;
-    li.appendChild(timerSpan);
+sortByRegistTime.addEventListener("click", async () => {
+  await resetChild();
+  let tmp = new Map(
+    [...taskStore.entries()].sort((a, b) => {
+      return a[0] - b[0];
+    })
+  );
+  taskStore.clear();
+  tmp.forEach((item) => {
+    console.log(item);
+    createTask(item.title, item.restTime);
   });
 });
-sortByRestTime.addEventListener("click", function() {
+sortByRestTime.addEventListener("click", async () => {
+  await resetChild();
+  let tmp = new Map(
+    [...taskStore.entries()].sort((a, b) => {
+      return a[1].restTime - b[1].restTime;
+    })
+  );
+  taskStore.clear();
+  tmp.forEach((item) => {
+    console.log(item);
+    createTask(item.title, item.restTime);
+  });
+
   // 남은 시간 순
 });
 
+let taskStore = new Map();
 inputSumbitBtn.onclick = function() {
   const inputTitle = globalInputTitle;
   const inputLimitTime = globalInputLimitTime;
+  createTask(inputTitle, inputLimitTime);
+};
+removeCheckedBtn.addEventListener("click", function() {
+  let body = document.getElementById("todos");
+  let chkbox = document.querySelectorAll("#todos .task #check");
+  for (let i in chkbox) {
+    if (chkbox[i].nodeType == 1 && chkbox[i].checked == true) {
+      body.removeChild(chkbox[i].parentNode);
+    }
+  }
+});
+
+removeAll.onclick = function() {
+  let body = document.getElementById("todos");
+  todoListData.forEach((item) => {
+    makeList(item.title, item.limitTime);
+  });
+  timerPool.forEach((timer) => {
+    clearTimeout(timer);
+  });
+  while (body.hasChildNodes()) {
+    body.removeChild(body.firstChild);
+  }
+  todoListData = [];
+  timerPool = [];
+};
+
+function addCompleteList(node, inputTitle, inputLimitTime, interval) {
+  clearTimeout(interval);
+  let target = node.parentNode;
+  target.parentNode.removeChild(target);
+  makeList(inputTitle, inputLimitTime);
+}
+function makeList(inputTitle, inputLimitTime) {
+  let li = document.createElement("li");
+  let completeTitle = document.createElement("span");
+  completeTitle.innerHTML = inputTitle;
+  li.appendChild(completeTitle);
+  li.classList.add("task");
+  li.style.listStyle = "none";
+  completedTodos.appendChild(li);
+
+  let completeLimitTime = document.createElement("span");
+  completeLimitTime.innerHTML = inputLimitTime;
+  li.appendChild(completeLimitTime);
+}
+function resetChild() {
+  let cell = document.getElementById("todos");
+  while (cell.hasChildNodes()) {
+    cell.removeChild(cell.firstChild);
+  }
+}
+function createTask(inputTitle, inputLimitTime) {
+  let registerTime = Date.now();
   let time = inputLimitTime;
   let hasDone = inputLimitTime > 0 ? false : true;
   let interval;
@@ -148,57 +206,13 @@ inputSumbitBtn.onclick = function() {
         timerSpan.innerHTML = time;
         increment(timerSpan);
       }, 1000);
+      console.log("add");
+      taskStore.set(registerTime, {
+        restTime: time,
+        title: inputTitle,
+        limitTime: inputLimitTime,
+      });
       timerPool.push(interval);
     }
-  }
-};
-removeCheckedBtn.addEventListener("click", function() {
-  let body = document.getElementById("todos");
-  let chkbox = document.querySelectorAll("#todos .task #check");
-  for (let i in chkbox) {
-    if (chkbox[i].nodeType == 1 && chkbox[i].checked == true) {
-      body.removeChild(chkbox[i].parentNode);
-    }
-  }
-});
-
-removeAll.onclick = function() {
-  let body = document.getElementById("todos");
-  todoListData.forEach((item) => {
-    makeList(item.title, item.limitTime);
-  });
-  timerPool.forEach((timer) => {
-    clearTimeout(timer);
-  });
-  while (body.hasChildNodes()) {
-    body.removeChild(body.firstChild);
-  }
-  todoListData = [];
-  timerPool = [];
-};
-
-function addCompleteList(node, inputTitle, inputLimitTime, interval) {
-  clearTimeout(interval);
-  let target = node.parentNode;
-  target.parentNode.removeChild(target);
-  makeList(inputTitle, inputLimitTime);
-}
-function makeList(inputTitle, inputLimitTime) {
-  let li = document.createElement("li");
-  let completeTitle = document.createElement("span");
-  completeTitle.innerHTML = inputTitle;
-  li.appendChild(completeTitle);
-  li.classList.add("task");
-  li.style.listStyle = "none";
-  completedTodos.appendChild(li);
-
-  let completeLimitTime = document.createElement("span");
-  completeLimitTime.innerHTML = inputLimitTime;
-  li.appendChild(completeLimitTime);
-}
-function resetChild() {
-  let cell = document.getElementById("todos");
-  while (cell.hasChildNodes()) {
-    cell.removeChild(cell.firstChild);
   }
 }
