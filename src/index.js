@@ -16,6 +16,8 @@ let globalInputTitle;
 let globalInputLimitTime;
 let todoListData = [];
 let timerPool = [];
+let taskStore = new Map();
+
 window.onload = () => {
   checkInputTitle.focus();
 };
@@ -36,35 +38,34 @@ sortSupervisor.addEventListener("click", function(event) {
   sortByRestTime.classList.toggle("checked");
 });
 sortByRegistTime.addEventListener("click", async () => {
+  let sorted = Array.from(document.querySelectorAll(".task")).sort((a, b) => {
+    return (
+      Number(
+        a.querySelector("li .timerDisplay").id.replace("stopWatchDisplay-", "")
+      ) -
+      Number(
+        b.querySelector("li .timerDisplay").id.replace("stopWatchDisplay-", "")
+      )
+    );
+  });
   await resetChild();
-  let tmp = new Map(
-    [...taskStore.entries()].sort((a, b) => {
-      return a[0] - b[0];
-    })
-  );
-  taskStore.clear();
-  tmp.forEach((item) => {
-    console.log(item);
-    createTask(item.title, item.restTime);
+  sorted.forEach((node) => {
+    todoList.appendChild(node);
   });
 });
 sortByRestTime.addEventListener("click", async () => {
-  await resetChild();
-  let tmp = new Map(
-    [...taskStore.entries()].sort((a, b) => {
-      return a[1].restTime - b[1].restTime;
-    })
-  );
-  taskStore.clear();
-  tmp.forEach((item) => {
-    console.log(item);
-    createTask(item.title, item.restTime);
+  let sorted = Array.from(document.querySelectorAll(".task")).sort((a, b) => {
+    return (
+      a.querySelector("li .timerDisplay").innerText -
+      b.querySelector("li .timerDisplay").innerText
+    );
   });
-
-  // 남은 시간 순
+  await resetChild();
+  sorted.forEach((node) => {
+    todoList.appendChild(node);
+  });
 });
 
-let taskStore = new Map();
 inputSumbitBtn.onclick = function() {
   const inputTitle = globalInputTitle;
   const inputLimitTime = globalInputLimitTime;
@@ -73,10 +74,16 @@ inputSumbitBtn.onclick = function() {
 removeCheckedBtn.addEventListener("click", function() {
   let body = document.getElementById("todos");
   let chkbox = document.querySelectorAll("#todos .task #check");
+  let removedList = [];
   for (let i in chkbox) {
     if (chkbox[i].nodeType == 1 && chkbox[i].checked == true) {
       body.removeChild(chkbox[i].parentNode);
+      makeList(todoListData[i].title, todoListData[i].limitTime);
+      removedList.push(i);
     }
+  }
+  for (let i = removedList.length - 1; i >= 0; i--) {
+    todoListData.splice(removedList[i], 1);
   }
 });
 
@@ -108,11 +115,17 @@ function makeList(inputTitle, inputLimitTime) {
   li.appendChild(completeTitle);
   li.classList.add("task");
   li.style.listStyle = "none";
+
   completedTodos.appendChild(li);
 
   let completeLimitTime = document.createElement("span");
   completeLimitTime.innerHTML = inputLimitTime;
   li.appendChild(completeLimitTime);
+
+  const restoreBtn = document.createElement("button");
+  restoreBtn.innerText = "복원하기";
+  restoreBtn.addEventListener("click", () => {});
+  li.appendChild(restoreBtn);
 }
 function resetChild() {
   let cell = document.getElementById("todos");
@@ -139,7 +152,7 @@ function createTask(inputTitle, inputLimitTime) {
     let task = {
       title: inputTitle,
       limitTime: inputLimitTime,
-      registerTime: new Date(),
+      registerTime: registerTime,
     };
     todoListData.push(task);
   }
@@ -171,6 +184,13 @@ function createTask(inputTitle, inputLimitTime) {
     checkbox.setAttribute("id", "check");
     li.appendChild(checkbox);
 
+    let modifyBtn = document.createElement("button");
+    modifyBtn.innerText = "수정하기";
+    modifyBtn.addEventListener("click", () => {
+      let modifiedTitle = prompt();
+      modifyBtn.parentNode.querySelector("span").innerText = modifiedTitle;
+    });
+    li.appendChild(modifyBtn);
     let completeBtn = document.createElement("button");
     completeBtn.setAttribute("id", "complete-btn");
     completeBtn.innerText = "종료";
@@ -186,7 +206,6 @@ function createTask(inputTitle, inputLimitTime) {
       todoListData.splice(index, 1);
       addCompleteList(event.target, inputTitle, inputLimitTime, interval);
     });
-
     li.appendChild(completeBtn);
     increment(timerSpan);
   }
@@ -206,7 +225,6 @@ function createTask(inputTitle, inputLimitTime) {
         timerSpan.innerHTML = time;
         increment(timerSpan);
       }, 1000);
-      console.log("add");
       taskStore.set(registerTime, {
         restTime: time,
         title: inputTitle,
