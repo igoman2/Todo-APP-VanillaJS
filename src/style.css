@@ -35,6 +35,10 @@ html {
   padding-left: 0;
 }
 
+.timerDisplay {
+  margin-left: 20px;
+}
+
 .show-list {
   padding: 0;
   margin-top: 15px;

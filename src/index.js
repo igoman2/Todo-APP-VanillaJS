@@ -19,6 +19,7 @@ const completedTodoList = document.querySelector("#completed-todos");
 let globalInputTitle;
 let globalInputLimitTime;
 let timerPool = [];
+let taskStore = new Map();
 
 window.onload = () => {
   checkInputTitle.focus();
@@ -29,6 +30,14 @@ inputEventSupervisor.addEventListener("keyup", (event) => {
     registerTaskBtn.onclick();
   }
 });
+registerTaskBtn.onclick = function() {
+  const isValid = checkValidation();
+  if (isValid) {
+    createTask(globalInputTitle, globalInputLimitTime);
+  } else {
+    alert("데이터를 입력해 주세요!");
+  }
+};
 checkInputTitle.addEventListener("keyup", function() {
   globalInputTitle = this.value;
 });
@@ -43,12 +52,7 @@ sortSupervisor.addEventListener("click", () => {
 sortByRegisterTimeBtn.addEventListener("click", async () => {
   let sorted = Array.from(todoList.querySelectorAll(".task")).sort((a, b) => {
     return (
-      Number(
-        a.querySelector("li .timerDisplay").id.replace("stopWatchDisplay-", "")
-      ) -
-      Number(
-        b.querySelector("li .timerDisplay").id.replace("stopWatchDisplay-", "")
-      )
+      Number(a.id.replace("task-", "")) - Number(b.id.replace("task-", ""))
     );
   });
   await resetChild();
@@ -69,32 +73,27 @@ sortByRestTimeBtn.addEventListener("click", async () => {
   });
 });
 
-registerTaskBtn.onclick = function() {
-  const isValid = checkValidation();
-  if (isValid) {
-    createTask(globalInputTitle, globalInputLimitTime);
-  } else {
-    alert("데이터를 입력해 주세요!");
-  }
-};
 removeCheckedTaskBtn.addEventListener("click", function() {
   let body = document.getElementById("todos");
   let checkedTask = document.querySelectorAll("#todos .task #check");
   for (let i in checkedTask) {
     if (checkedTask[i].nodeType == 1 && checkedTask[i].checked == true) {
-      makeList(
+      let targetId = +checkedTask[i].parentNode.id.replace("task-", "");
+      clearTimeout(taskStore.get(targetId).interval);
+      renderCompleteTask(
         checkedTask[i].parentNode.querySelector("span").innerText,
         checkedTask[i].parentNode.querySelector(".limitTime").innerText
       );
       body.removeChild(checkedTask[i].parentNode);
     }
   }
+  hasCheckedTask();
 });
 removeAllBtn.onclick = function() {
   let body = document.getElementById("todos");
   let currentTask = body.childNodes;
   currentTask.forEach((item) => {
-    makeList(
+    renderCompleteTask(
       item.querySelector("span").innerText,
       item.querySelector(".limitTime").innerText
     );
@@ -106,20 +105,23 @@ removeAllBtn.onclick = function() {
     body.removeChild(body.firstChild);
   }
   timerPool = [];
+  hasCheckedTask();
 };
 
 function addCompleteList(node, interval) {
   clearTimeout(interval);
   let target = node.parentNode;
   target.parentNode.removeChild(target);
-  makeList(
+  renderCompleteTask(
     target.querySelector("span").innerText,
     target.querySelector(".limitTime").innerText
   );
+  hasCheckedTask();
 }
-function makeList(inputTitle, inputLimitTime) {
+function renderCompleteTask(inputTitle, inputLimitTime) {
   let li = document.createElement("li");
   let completeTitle = document.createElement("span");
+  completeTitle.classList.add("titleComplete");
   completeTitle.innerHTML = inputTitle;
   li.appendChild(completeTitle);
   li.classList.add("task");
@@ -128,16 +130,32 @@ function makeList(inputTitle, inputLimitTime) {
   completedTodoList.appendChild(li);
 
   let completeLimitTime = document.createElement("span");
+  completeLimitTime.classList.add("restoreLimitTime");
   completeLimitTime.innerHTML = inputLimitTime;
   li.appendChild(completeLimitTime);
 
   const restoreBtn = document.createElement("button");
   restoreBtn.innerText = "복원하기";
   restoreBtn.addEventListener("click", (event) => {
-    createTask(inputTitle, inputLimitTime);
+    const restoreTitle = event.target.parentNode.querySelector(".titleComplete")
+      .innerText;
+    const restoreLimitTime = event.target.parentNode.querySelector(
+      ".restoreLimitTime"
+    ).innerText;
+    createTask(restoreTitle, restoreLimitTime);
     event.target.parentNode.parentNode.removeChild(event.target.parentNode);
   });
   li.appendChild(restoreBtn);
+
+  const modifyLimitTimeBtn = document.createElement("button");
+  modifyLimitTimeBtn.innerText = "시간 수정하기";
+  modifyLimitTimeBtn.addEventListener("click", (event) => {
+    let modifiedLimitTime = prompt();
+    event.target.parentNode.querySelector(
+      ".restoreLimitTime"
+    ).innerText = modifiedLimitTime;
+  });
+  li.appendChild(modifyLimitTimeBtn);
 }
 function resetChild() {
   let cell = document.getElementById("todos");
@@ -149,6 +167,7 @@ function createTask(inputTitle, inputLimitTime) {
   let time = inputLimitTime;
   let hasDone = inputLimitTime > 0 ? false : true;
   let interval;
+  let registerTime = Date.now();
   render();
   resetInput();
 
@@ -161,7 +180,7 @@ function createTask(inputTitle, inputLimitTime) {
   }
   function render() {
     let li = document.createElement("li");
-    li.setAttribute("id", `task-${Date.now()}`);
+    li.setAttribute("id", `task-${registerTime}`);
 
     let titleSpan = document.createElement("span");
     titleSpan.innerHTML = inputTitle;
@@ -171,7 +190,6 @@ function createTask(inputTitle, inputLimitTime) {
     todoList.appendChild(li);
 
     let timerSpan = document.createElement("span");
-    timerSpan.setAttribute("id", `stopWatchDisplay-${Date.now()}`);
     timerSpan.classList.add("timerDisplay");
     timerSpan.innerHTML = inputLimitTime;
     li.appendChild(timerSpan);
@@ -185,15 +203,18 @@ function createTask(inputTitle, inputLimitTime) {
     let checkbox = document.createElement("input");
     checkbox.setAttribute("type", "checkbox");
     checkbox.setAttribute("id", "check");
+    checkbox.addEventListener("click", () => {
+      hasCheckedTask();
+    });
     li.appendChild(checkbox);
 
-    let modifyBtn = document.createElement("button");
-    modifyBtn.innerText = "수정하기";
-    modifyBtn.addEventListener("click", () => {
+    let titleModifyBtn = document.createElement("button");
+    titleModifyBtn.innerText = "수정하기";
+    titleModifyBtn.addEventListener("click", () => {
       let modifiedTitle = prompt();
-      modifyBtn.parentNode.querySelector("span").innerText = modifiedTitle;
+      titleModifyBtn.parentNode.querySelector("span").innerText = modifiedTitle;
     });
-    li.appendChild(modifyBtn);
+    li.appendChild(titleModifyBtn);
 
     let completeBtn = document.createElement("button");
     completeBtn.setAttribute("id", "complete-btn");
@@ -201,11 +222,14 @@ function createTask(inputTitle, inputLimitTime) {
     completeBtn.addEventListener("click", (event) => {
       let body = event.target.parentNode.parentNode;
       let target = event.target.parentNode;
-      makeList(
+      let targetId = +target.id.replace("task-", "");
+      clearTimeout(taskStore.get(targetId).interval);
+      renderCompleteTask(
         target.querySelector("span").innerText,
         target.querySelector(".limitTime").innerText
       );
       body.removeChild(target);
+      hasCheckedTask();
     });
     li.appendChild(completeBtn);
 
@@ -226,8 +250,25 @@ function createTask(inputTitle, inputLimitTime) {
         timerSpan.innerHTML = time;
         increment(timerSpan);
       }, 1000);
+      taskStore.set(registerTime, {
+        interval: interval,
+      });
       timerPool.push(interval);
     }
+  }
+}
+function hasCheckedTask() {
+  let checkedTask = document.querySelectorAll("#todos .task #check");
+  let checkedNodeCount = 0;
+  for (let i in checkedTask) {
+    if (checkedTask[i].nodeType == 1 && checkedTask[i].checked == true) {
+      checkedNodeCount++;
+    }
+  }
+  if (checkedNodeCount > 0) {
+    removeCheckedTaskBtn.removeAttribute("disabled");
+  } else {
+    removeCheckedTaskBtn.setAttribute("disabled", "");
   }
 }
 function checkValidation() {

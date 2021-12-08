@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="description" content="assignment-todo">
-        <meta name="author" content="한준호">
+        <meta name="author" content="HAN">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>Todo</title>
     </head>
@@ -24,33 +24,33 @@
                     </span>
                     <button class="submit-btn">추가</button>
                 </div>
-                <div>
-                    <h1>
-                        할 일 목록
-                    </h1>
-                    <div class="todo-option-container">
-                        <div class="todo-option-supervisor">
-                            <button class="checked" id="sort-register-time">
-                                입력한 순
-                            </button>
-                            <button id="sort-rest-time">
-                                남은 시간 순
-                            </button>
-                        </div>
-                        <div class="todo-option-complete">
-                            <button id="remove-all-checked" >
-                                선택 종료
-                            </button>
-                            <button id="remove-all">
-                                전체 종료
-                            </button>
-                        </div>
+        </section>
+        <section class="container">
+            <div class="layout">
+                <h1>
+                    할 일 목록
+                </h1>
+                <div class="todo-option-container">
+                    <div class="todo-option-supervisor">
+                        <button class="checked" id="sort-register-time">
+                            입력한 순
+                        </button>
+                        <button id="sort-rest-time">
+                            남은 시간 순
+                        </button>
                     </div>
-                    <ul class="todos-container" id="todos"></ul>
+                    <div class="todo-option-complete">
+                        <button id="remove-all-checked"  disabled>
+                            선택 종료
+                        </button>
+                        <button id="remove-all">
+                            전체 종료
+                        </button>
+                    </div>
                 </div>
+                <ul class="todos-container" id="todos"></ul>
             </div>
         </section>
-
         <section class="container">
             <div class="layout">
                 <h1>
