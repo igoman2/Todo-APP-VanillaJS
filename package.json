@@ -4,7 +4,7 @@
   "description": "",
   "main": "todo.js",
   "scripts": {
-    "test": "jest --watch",
+    "test": "jest --watchAll",
     "dev": "webpack serve --config webpack.config.dev.js",
     "build": "webpack --config webpack.config.prod.js"
   },
